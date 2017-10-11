@@ -529,7 +529,6 @@ def show_hand(hand):
 
     return Mão
 
-
 def soma_hand(hand):
     soma = 0
 
@@ -538,19 +537,9 @@ def soma_hand(hand):
 
     return soma
 
-
 def roll_dice():
     dado = random.randint(1, 6)
     return dado
-
-
-def vez_jogador():
-    pass
-
-
-def vez_IA():
-    pass
-
 
 main_title()
 
