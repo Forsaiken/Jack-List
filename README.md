@@ -2,6 +2,7 @@
 
 Game Project baseado nos jogos de baralho
 
-## Prompt ##
+#### Modo Carreira ####
 
+:white_large_square:
 
