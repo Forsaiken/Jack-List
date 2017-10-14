@@ -2,10 +2,11 @@ import random
 import names
 
 class IA():
-    def __init__(self, id, name, money):
+    def __init__(self, id, name, money, hand):
         self.n = name
         self.m = money
         self.id = id
+        self.h = hand
 
 
 class card():
@@ -17,9 +18,10 @@ class card():
 
 
 class player():
-    def __init__(self, name, money):
+    def __init__(self, name, money, hand):
         self.n = name
         self.m = money
+        self.h = hand
 
 
 class data:
@@ -148,42 +150,42 @@ def create_deck_truco():
 
             if int(str(deck[item][1])) == 8:
 
-                deck[item] = card("Q", naipe(deck[item]), int(str(deck[item][1])), 'images/{}'.format(deck[item]))
+                deck[item] = card("Q", naipe(deck[item]), int(str(deck[item][1] + deck[item][2])), 'images/{}'.format(deck[item]))
 
             elif int(str(deck[item][1])) == 9:
 
-                deck[item] = card("J", naipe(deck[item]), int(str(deck[item][1])), 'images/{}'.format(deck[item]))
+                deck[item] = card("J", naipe(deck[item]), int(str(deck[item][1] + deck[item][2])), 'images/{}'.format(deck[item]))
 
             else:
 
-                deck[item] = card(str(deck[item][1]), naipe(deck[item]), int(str(deck[item][1])),
+                deck[item] = card(str(deck[item][1]), naipe(deck[item]), int(str(deck[item][1] + deck[item][2])),
                                   'images/{}'.format(deck[item]))
 
-            print("Objeto", deck[item], "(", deck[item].s, deck[item].n, deck[item].v, deck[item].img, ") foi criado.")
+            #print("Objeto", deck[item], "(", deck[item].s, deck[item].n, deck[item].v, deck[item].img, ") foi criado.")
 
         else:
 
             if int(str(deck[item][1] + deck[item][2])) == 10:
 
-                deck[item] = card("K", naipe(deck[item]), int(str(deck[item][1] + deck[item][2])),
+                deck[item] = card("K", naipe(deck[item]), int(str(deck[item][1] + deck[item][2] + deck[item][3])),
                                   'images/{}'.format(deck[item]))
 
             elif int(str(deck[item][1] + deck[item][2])) == 11:
 
-                deck[item] = card("A", naipe(deck[item]), int(str(deck[item][1] + deck[item][2])),
+                deck[item] = card("A", naipe(deck[item]), int(str(deck[item][1] + deck[item][2] + deck[item][3])),
                                   'images/{}'.format(deck[item]))
 
             elif int(str(deck[item][1] + deck[item][2])) == 12:
 
-                deck[item] = card("2", naipe(deck[item]), int(str(deck[item][1] + deck[item][2])),
+                deck[item] = card("2", naipe(deck[item]), int(str(deck[item][1] + deck[item][2] + deck[item][3])),
                                   'images/{}'.format(deck[item]))
 
             elif int(str(deck[item][1] + deck[item][2])) == 13:
 
-                deck[item] = card("3", naipe(deck[item]), int(str(deck[item][1] + deck[item][2])),
+                deck[item] = card("3", naipe(deck[item]), int(str(deck[item][1] + deck[item][2] + deck[item][3])),
                                   'images/{}'.format(deck[item]))
 
-            print("Objeto", deck[item], "(", deck[item].s, deck[item].n, deck[item].v, ") foi criado.")
+            #print("Objeto", deck[item], "(", deck[item].s, deck[item].n, deck[item].v, ") foi criado.")
 
     return deck
 
@@ -220,7 +222,7 @@ def create_IA(players):
         # name = "P" + str(random.randint(30, 100) * 100)
         name = names.get_full_name()
 
-        objeto = IA(i, name, money)
+        objeto = IA(i, name, money, [])
         print("Objeto", objeto, "(", i, objeto.n, objeto.m, ") criado com sucesso.")
 
         players_list.append(objeto)
@@ -258,7 +260,7 @@ def new_game():
 
 def carrer_mode():
     name = input("\nQual o nome do seu jogador?")
-    p = player(name, 500)
+    p = player(name, 500, [])
     IA = create_IA(99)
 
 
@@ -439,16 +441,194 @@ def blackjack(player, IA):
 
 
 def truco(player, IA):
+
     # Método para criar jogador IA caso o número de jogadores seja impar.
 
     if player == None:
         quantidade_players = len(IA)
+        id_player = ""
     else:
         quantidade_players = len(IA) + 1
+        id_player = player.n
 
     if quantidade_players % 2 != 0:
         new_player = create_IA(1)
         IA.append(new_player)
+
+    # Passando Jogadores para uma nova lista para formar times
+
+    players_to_composition = IA[:]
+
+    # Caso exista jogador ele irá junta-lo para definir os times.
+
+    if player != None:
+        players_to_composition.append(player)
+
+    teams = make_teams(players_to_composition)
+
+    ''' Truco é o pedido de "aumento de aposta". A rodada que normalmente vale 1 ponto passa a valer 3.
+        Quando um jogador Truca outro jogador, este pode aceitar o Truco e rodada passa a valer 3 pontos,
+        pode fugir, interrompendo a rodada e perdendo 1 ponto, ou pode pedir Seis, elevando o valor da
+        aposta para 6 pontos.
+
+        Da mesma maneira quando é pedido o Seis, as respostas podem ser aceitar, fugir or pedir Nove.
+        Isso pode continuar até alguém pedir Doze onde as respostas somente podem ser aceitar ou fugir (não existe um
+        Quinze já que a partida vai até 12 pontos).
+        O jogador, dupla ou trio que pediu Truco não pode pedir Seis, essa regra igualmente vale para o Seis e Nove. '''
+
+    team_points = [[0],[0]]
+
+    while team_points[0][0] <= 11 or team_points[1][0] <= 11:
+
+        # Criando Deck do Truco
+
+        deck = create_deck_truco()
+        shuffle_deck(deck)
+
+        # Definindo carta Vira
+
+        deck_size = len(deck)
+        vira = deck[0]
+        del deck[0]
+        print("A carta vira é:", vira.s, vira.n, ")(Valor:", vira.v, ")")
+
+        # Modificando os valores das cartas do deck conforme a Manilha
+
+        deck = manilha(deck, vira)
+
+        # Distribuindo cartas para a mãos dos jogadores
+
+        for team in teams:
+            for player in team:
+                player.h = []
+
+        for team in teams:
+            for player in team:
+                for i in range(3):
+                    deck_size = len(deck)
+                    pegar = random.randint(0, deck_size - 1)
+                    player.h.append(deck[pegar])
+                    del deck[pegar]
+
+                    print(player.n,"sacou a carta", player.h[-1].s, player.h[-1].n, ")(Valor:",player.h[-1].v,")")
+
+        match_points = [[0],[0]]
+
+        while match_points[0][0] < 2 and match_points[1][0] < 2:
+
+            card_to_beat = []
+
+            for player_team in range(int(quantidade_players/2)):
+                for team in range(2):
+
+                    this_player = teams[team][player_team]
+
+                    if this_player.n != id_player:
+
+                        if card_to_beat == []:
+
+                            pick = random.randint(0,len(this_player.h) - 1)
+                            card_to_beat = [this_player.h[pick], team, this_player]
+                            print(this_player.n, "jogou a carta (", this_player.h[pick].s, this_player.h[pick].n, ") e começou a rodada.")
+                            del this_player.h[pick]
+
+                        elif card_to_beat[1] != team:
+
+                            right_card = -10
+
+                            for card in range(len(this_player.h)):
+
+                                if this_player.h[card].v > card_to_beat[0].v and right_card == -10:
+                                    right_card = card
+                                elif this_player.h[card].v < card_to_beat[0].v and right_card == -10:
+                                    right_card = card
+                                elif this_player.h[card].v > card_to_beat[0].v and this_player.h[card].v < this_player.h[right_card].v:
+                                    right_card = card
+                                elif this_player.h[card].v < this_player.h[right_card].v and this_player.h[right_card].v < card_to_beat[0].v:
+                                    right_card = card
+
+                            if this_player.h[right_card].v > card_to_beat[0].v:
+
+                                print(this_player.n, "jogou a carta (", this_player.h[right_card].s,
+                                    this_player.h[right_card].n, ") e venceu a atual.")
+                                card_to_beat = [this_player.h[right_card], team, this_player]
+                                del this_player.h[right_card]
+
+                            else:
+
+                                print(this_player.n, "jogou a carta (", this_player.h[right_card].s,
+                                    this_player.h[right_card].n, ") e não venceu a atual.")
+                                del this_player.h[right_card]
+
+                        elif card_to_beat[1] == team:
+
+                            right_card = -10
+
+                            for card in range(len(this_player.h)):
+
+                                if right_card == -10:
+
+                                    right_card = card
+
+                                elif this_player.h[card].v < this_player.h[right_card].v:
+
+                                    right_card = card
+
+                            if this_player.h[right_card].v > card_to_beat[0].v:
+
+                                print(this_player.n, "jogou a carta (", this_player.h[right_card].s,
+                                    this_player.h[right_card].n, ") e venceu a atual.")
+                                card_to_beat = [this_player.h[right_card], team, this_player]
+                                del this_player.h[right_card]
+
+                            else:
+
+                                print(this_player.n, "jogou a carta (", this_player.h[right_card].s,
+                                    this_player.h[right_card].n, ") e não venceu a atual.")
+                                del this_player.h[right_card]
+
+            if card_to_beat[1] == 0:
+                match_points[0][0] += 1
+            else:
+                match_points[1][0] += 1
+
+        if match_points[0][0] >= 2:
+            team_points[0][0] += 1
+        else:
+            team_points[1][0] += 1
+
+    if team_points[0][0] >= 12:
+        print("Time 1 venceu!")
+    else:
+        print("Time 2 venceu!")
+
+
+def manilha(deck, vira):
+
+    if vira.v >= 131:
+        valor = 4
+    elif vira.v >= 101:
+        valor = int(str(vira.v)[0] + str(vira.v)[1]) + 1
+    elif vira.v >= 41:
+        valor = int(str(vira.v)[0]) + 1
+
+    for carta in deck:
+
+        if carta.v < 101:
+            if int(str(carta.v)[0]) == valor:
+                print("A carta",carta.s,carta.n,"é manilha")
+                carta.v += 100
+        else:
+            if int(str(carta.v)[0] + str(carta.v)[1]) == valor:
+                print("A carta", carta.s, carta.n, "é manilha")
+                carta.v += 100
+
+    return deck
+
+
+def make_teams(players):
+
+    quantidade_players = len(players)
 
     if quantidade_players == 2:
         times = [["P1"], ["P2"]]
@@ -458,18 +638,12 @@ def truco(player, IA):
         times = [["P1", "P3", "P5"], ["P2", "P4", "P6"]]
 
     ready_team = False
-    players_to_composition = IA[:]
-
-    # Caso exista jogador ele irá junta-lo para definir os times.
-
-    if player != None:
-        players_to_composition.append(player)
 
     while ready_team == False:
 
         dados = []
 
-        for item in players_to_composition:
+        for item in players:
             valor = roll_dice()
             print(item.n, "tirou", valor, "no dado")
             dados.append(valor)
@@ -484,39 +658,40 @@ def truco(player, IA):
                 print("Comparando", dados[i], "com", dados[x + 1])
                 if dados[i] == dados[x+1] and i != x+1:
                     contador += 1
-                    if len(players_to_composition) == 6 and escolhido >= 0:
+                    if len(players) == 6 and escolhido >= 0:
                         escolhido2 = x + 1
                     else:
                         escolhido = x + 1
 
-            if contador == 1 and len(players_to_composition) == 4:
-                print(players_to_composition[i].n, "fara dupla com", players_to_composition[escolhido].n)
-                times[0][0] = players_to_composition[i]
-                times[0][1] = players_to_composition[escolhido]
-                del players_to_composition[escolhido]
-                del players_to_composition[i]
-                times[1][0] = players_to_composition[0]
-                times[1][1] = players_to_composition[1]
+            if contador == 1 and len(players) == 4:
+                print(players[i].n, "fara dupla com", players[escolhido].n)
+                times[0][0] = players[i]
+                times[0][1] = players[escolhido]
+                del players[escolhido]
+                del players[i]
+                times[1][0] = players[0]
+                times[1][1] = players[1]
                 ready_team = True
                 break
 
-            elif contador == 2 and len(players_to_composition) == 6:
-                print(players_to_composition[i].n, "fara trio com", players_to_composition[escolhido].n, "e"
-                ,players_to_composition[escolhido2].n)
-                times[0][0] = players_to_composition[i]
-                times[0][1] = players_to_composition[escolhido]
-                times[0][2] = players_to_composition[escolhido2]
-                del players_to_composition[escolhido2]
-                del players_to_composition[escolhido]
-                del players_to_composition[i]
-                times[1][0] = players_to_composition[0]
-                times[1][1] = players_to_composition[1]
-                times[1][2] = players_to_composition[2]
+            elif contador == 2 and len(players) == 6:
+                print("Time 1:",players[i].n, "-", players[escolhido].n, "-"
+                ,players[escolhido2].n)
+                times[0][0] = players[i]
+                times[0][1] = players[escolhido]
+                times[0][2] = players[escolhido2]
+                del players[escolhido2]
+                del players[escolhido]
+                del players[i]
+                print("Time 2:", players[0].n, "-", players[1].n, "-", players[2].n)
+                times[1][0] = players[0]
+                times[1][1] = players[1]
+                times[1][2] = players[2]
                 ready_team = True
-                for item in times:
-                    for i in item:
-                        print(i.n)
                 break
+
+    return times
+
 
 def show_hand(hand):
     Mão = "Sua mão atual é ("
@@ -529,6 +704,7 @@ def show_hand(hand):
 
     return Mão
 
+
 def soma_hand(hand):
     soma = 0
 
@@ -537,9 +713,11 @@ def soma_hand(hand):
 
     return soma
 
+
 def roll_dice():
     dado = random.randint(1, 6)
     return dado
+
 
 main_title()
 
