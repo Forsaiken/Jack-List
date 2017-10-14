@@ -4,32 +4,32 @@ Game Project baseado nos jogos de baralho
 
 #### Modo Carreira ####
 
-:white_large_square:  Criação de jogadores IA
+☑  Criação de jogadores IA
 
 #### Modo Partida ####
 
-:white_check_mark:    Truco - Game Engine
+☑    Truco - Game Engine
 
-:white_check_mark:    Truco - Match System
+☑    Truco - Match System
 
-:white_check_mark:    Truco - Adaptação para IA's
+☑    Truco - Adaptação para IA's
 
-:white_large_square:    Truco - Adaptação para Player contra IA's
-
-
-:white_check_mark:    Black Jack - Game Engine
-
-:white_check_mark:    Black Jack - Match System
-
-:white_check_mark:    Black Jack - Adaptação para IA's
-
-:white_large_square:    Black Jack - Adaptação para Player contra IA's
+☒    Truco - Adaptação para Player contra IA's
 
 
-:white_large_square:    Poker - Game Engine
+☑    Black Jack - Game Engine
 
-:white_large_square:    Poker - Match System
+☑    Black Jack - Match System
 
-:white_large_square:    Poker - Adaptação para IA's
+☑    Black Jack - Adaptação para IA's
 
-:white_large_square:    Poker - Adaptação para Player contra IA's
+☒    Black Jack - Adaptação para Player contra IA's
+
+
+☒  Poker - Game Engine
+
+☒  Poker - Match System
+
+☒  Poker - Adaptação para IA's
+
+☒  Poker - Adaptação para Player contra IA's
