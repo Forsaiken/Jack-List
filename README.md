@@ -4,7 +4,7 @@ Game Project baseado nos jogos de baralho
 
 #### Modo Carreira ####
 
-:white_large_square:  Criação de jogadores IA
+:white_medium_square:  Criação de jogadores IA
 
 #### Modo Partida ####
 
