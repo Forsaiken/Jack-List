@@ -1,4 +1,7 @@
-# Jack-List
+# Jack List
 
-Se trata de um projeto que contém jogos de baralho.
-No momento apenas BlackJack e Truco.
+Game Project baseado nos jogos de baralho
+
+## Prompt ##
+
+
